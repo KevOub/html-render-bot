@@ -1,0 +1,19 @@
+version: '3.4'
+
+services:
+  bot:
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - /tmp/:/app/uploads
+      # - /app/uploads/:./uploads:
+    environment:
+      - DISPLAY=${DISPLAY}
+    build:
+      context: browser
+      dockerfile: ./Dockerfile
+      shm_size: '2gb' 
+    shm_size: '2gb' 
+    ports:
+      - 127.0.0.1:3000:3000
+    
+      
