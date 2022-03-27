@@ -2,6 +2,12 @@ version: '3.4'
 
 services:
   bot:
+    build: 
+      context: bot
+      dockerfile: ./Dockerfile
+
+  browser:
+    hostname: browser
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix
       - /tmp/:/app/uploads

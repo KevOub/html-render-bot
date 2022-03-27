@@ -1,0 +1,5 @@
+# discord
+# aiohttp==3.7.4
+py-cord
+yarl
+requests

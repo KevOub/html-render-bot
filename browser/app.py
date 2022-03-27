@@ -1,22 +1,22 @@
-import base64
 import os
 from time import sleep
-
-from flask import Flask, request, flash, redirect,url_for
+import random
+import string
+from flask import Flask, flash, redirect, request, url_for, send_from_directory
 from selenium import webdriver
-from selenium.common.exceptions import (NoAlertPresentException,
-                                        TimeoutException,
-                                        UnexpectedAlertPresentException)
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.ui import WebDriverWait
+# from selenium.webdriver.support import expected_conditions as EC
+# from selenium.webdriver.support.ui import WebDriverWait
 from werkzeug.utils import secure_filename
 
 UPLOAD_FOLDER = '/app/html-files/'
-ALLOWED_EXTENSIONS = {'html', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
+DOWNLAOD_FOLDER = '/app/screenshots/'
+ALLOWED_EXTENSIONS = {'html'}
 WINDOW_SIZE = "1920,1080"
 
 Flask.secret_key = "test"
+
+# send file
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -57,16 +57,12 @@ def set_chrome_options():
     return chrome_options
 
 
-FILE = "file://main.html"
 
 
-# def fire(browser,payload):
-#     browser.execute_script("document.write('{}')".format(payload))
-#     print("TEST: {}".format(browser.switch_to.alert.text ))
-#     return browser.switch_to.alert.text != None
+def generateFilename(N = 8):
+    return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(N))
 
-
-def screenshot(html_content: str):
+def screenshot(html_content: str, filename : str):
     # launch headless chrome
     browser = webdriver.Chrome(options=set_chrome_options())
 
@@ -78,11 +74,11 @@ def screenshot(html_content: str):
     # browser.set_window_size(100, 100)
 
     browser.find_element_by_tag_name('body').screenshot(
-        "/app/uploads/test.png")  # avoids scrollbar
+        f"{DOWNLAOD_FOLDER}{filename}.png")  # avoids scrollbar
 
     browser.quit()
     # TODO return path of file
-    return
+    return f"{filename}.png"
 
 
 project_root = os.path.dirname(__file__)
@@ -90,12 +86,15 @@ template_path = os.path.join(project_root, './templates')
 app = Flask(__name__, template_folder=template_path)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
+@app.route("/files/<path:path>")
+def get_file(path):
+    """Download a file."""
+    return send_from_directory(DOWNLAOD_FOLDER, path, as_attachment=True)
+
+
 @app.route("/", methods=["GET", "POST"])
 def api_call():
     if request.method == "GET":
-        # driver = webdriver.Chrome(options=set_chrome_options())
-        screenshot("")
-        # return render_template('flag.html')
         return "Screenshot requires POST to / with html content"
     if request.method == "POST":
         if 'file' not in request.files:
@@ -109,11 +108,15 @@ def api_call():
             return redirect(request.url)
         if file and allowed_file(file.filename):
             # print(file.stream.read())
-            screenshot(file.stream.read())
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            print(f"TAKING SCREENSHOT OF {file}!")
+            fileout = screenshot(file.stream.read(),generateFilename())
+            # filename = secure_filename(file.filename)
+            # file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             # return "redirect(url_for('download_file', name=filename))"
-            return "success!"
+            return fileout
+        else:
+            print("OOP!")
+            return "404"
 
 
 if __name__ == "__main__":
