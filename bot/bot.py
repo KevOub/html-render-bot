@@ -1,6 +1,10 @@
 import discord
 import requests
 import io
+import os
+
+# from sympy import li
+
 
 
 class MyClient(discord.Client):
@@ -21,17 +25,29 @@ class MyClient(discord.Client):
 
             # CURSED INCOMING. I want an HTML file to send to selenium, right? Why not create an io body?
             SCREENSHOT_NAME = ""
+
+            test = message.content.replace("```html","")
+            test = test.replace("```","")
+            cursedFile = io.StringIO(test)
             
-            with io.StringIO() as cursedFile:
-                cursedFile.write(message.content)
-                files = {'file' : cursedFile}
-                # then post it
-                r = requests.post(
-                    'http://browser:3000', files=files)
-                if r.content.decode() == "Screenshot requires POST to / with html content":
-                    await message.reply('Failed on the request attempt. Contact bot developer')
-                else:
-                    SCREENSHOT_NAME = r.content.decode()
+            # takes text and treats it like a file so that I can send it over to the API as a multipart-file upload
+            # with io.StringIO() as cursedFile:
+
+                # way to delete first and last line
+                # for number, line in enumerate(msg.decode()):
+                #     # cursedFile.write(message.content)
+                #     if number != 0 and number != len(line):
+            
+            # cursedFile.write(message.content)
+
+            files = {'file' : cursedFile}
+            # then post it
+            r = requests.post(
+                'http://browser:3000', files=files)
+            if r.content.decode() == "Screenshot requires POST to / with html content":
+                await message.reply('Failed on the request attempt. Contact bot developer')
+            else:
+                SCREENSHOT_NAME = r.content.decode()
                 
             if SCREENSHOT_NAME == "":
                 await message.reply('Failed on getting screenshot name. Contact bot developer')
@@ -41,7 +57,7 @@ class MyClient(discord.Client):
                     f.write(r.content)
                     
 
-                await message.reply(file=discord.File(f"/tmp/{SCREENSHOT_NAME}"))                    
+                await message.reply(cursedFile.read(),file=discord.File(f"/tmp/{SCREENSHOT_NAME}"))                    
                 
 
                 # print(r.headers)

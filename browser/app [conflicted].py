@@ -1,4 +1,3 @@
-from cgitb import html
 import os
 from time import sleep
 import random
@@ -70,13 +69,9 @@ def screenshot(html_content: str, filename : str):
     # load html file
     # browser.get("https://google.com")
 
-    print(f"---\n{html_content}\n--- LOOK AT ME")
-
-
-
     browser.get(
         f"data:text/html;charset=utf-8,{html_content}")
-    # # browser.set_window_size(100, 100)
+    # browser.set_window_size(100, 100)
 
     browser.find_element_by_tag_name('body').screenshot(
         f"{DOWNLAOD_FOLDER}{filename}.png")  # avoids scrollbar
@@ -94,8 +89,8 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 @app.route("/files/<path:path>")
 def get_file(path):
     """Download a file."""
-    return send_from_directory(DOWNLAOD_FOLDER, path, as_attachment=True)
-    # return f"<img src=\"localhost:3000/files/{path}\">"
+    # return send_from_directory(DOWNLAOD_FOLDER, path, as_attachment=True)
+    return f"<img src=\"/files/{path}\">"
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -113,11 +108,9 @@ def api_call():
             flash('No selected file')
             return redirect(request.url)
         if file:
-            data = file.read().decode()
-            # print(file.read().decode())
-            print(data)
+            print(file.read().decode())
             print(f"TAKING SCREENSHOT OF {file.filename}!")
-            fileout = screenshot(data,generateFilename())
+            fileout = screenshot(file.read().decode(),generateFilename())
             # filename = secure_filename(file.filename)
             # file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             # return "redirect(url_for('download_file', name=filename))"

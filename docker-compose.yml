@@ -10,7 +10,7 @@ services:
     hostname: browser
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix
-      - /tmp/:/app/uploads
+      - /tmp/:/app/screenshots
       # - /app/uploads/:./uploads:
     environment:
       - DISPLAY=${DISPLAY}
